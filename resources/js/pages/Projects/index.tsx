@@ -1,10 +1,12 @@
-import AppLayout from '@/layouts/app-layout';
-import { Head } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Link } from '@inertiajs/react';
-import { Eye, Edit, Trash2, Plus } from 'lucide-react';
 import Pagination from '@/components/pagination';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import AppLayout from '@/layouts/app-layout';
+import { Head, Link, router } from '@inertiajs/react';
+import { on } from 'events';
+import { Edit, Eye, Plus, Trash2 } from 'lucide-react';
 
 interface User {
     id: number;
@@ -19,11 +21,10 @@ interface Project {
     due_date?: string;
     status: string;
     image?: string;
-    created_by: User;  // ← Changed from string to User object
-    updated_by: User;  // ← Also add this for consistency
+    created_by: User; // ← Changed from string to User object
+    updated_by: User; // ← Also add this for consistency
     created_at: string;
 }
-
 
 interface PaginatedProjects {
     data: Project[];
@@ -42,10 +43,32 @@ interface Props {
     projects: Project[] | PaginatedProjects;
 }
 
-export default function Index({ projects }: Props) {
+export default function Index({ projects,queryParams=null }: Props) {
     // Handle both wrapped and unwrapped data structures
-    const projectsData: Project[] = Array.isArray(projects) ? projects : (projects?.data || []);
-    
+    const projectsData: Project[] = Array.isArray(projects) ? projects : projects?.data || [];
+
+
+    queryParams = queryParams || {};
+    const fieldChange= (name,value) =>{
+      if(value){
+        queryParams[name] = value;
+      }else{
+        delete queryParams[name];
+      }
+      router.get(route('projects.index'), queryParams, {
+        preserveState: true,
+        preserveScroll: true,
+      });
+    }
+
+    const onKeyPress = (name, e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            fieldChange(name, e.target.value);
+            // Optionally, you can trigger a search or filter function here
+        }
+    }
+
     const getStatusColor = (status: string): string => {
         switch (status.toLowerCase()) {
             case 'pending':
@@ -63,119 +86,95 @@ export default function Index({ projects }: Props) {
         <AppLayout>
             <Head title="Projects" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Projects</h1>
                     <Link href="/projects/create">
                         <Button>
-                            <Plus className="w-4 h-4 mr-2" />
+                            <Plus className="mr-2 h-4 w-4" />
                             New Project
                         </Button>
                     </Link>
                 </div>
 
-                <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="overflow-hidden rounded-lg bg-white shadow">
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Project image
-                                    </th>
-                                  
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Project
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Due Date
-                                    </th>
-                             
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions
-                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Project</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Status</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Due Date</th>
+
+                                    <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-500 uppercase">Actions</th>
                                 </tr>
                             </thead>
-                              <thead className="bg-gray-50">
+                            <thead className="bg-gray-50">
                                 <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                       
+                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                        <Input defaultValue={queryParams?.name} placeholder="Search by project name" className='w-full' onBlur={e => fieldChange('name', e.target.value)}  onKeyPress={e => onKeyPress('name', e)} />
                                     </th>
-                                  
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        
+
+                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                        {/* <Select  onChange={e => fieldChange('status', e.target.value)} >
+                                      <option value="">All Statuses</option>
+                                      <option value="pending">Pending</option>
+                                      <option value="in_progress">In Progress</option>
+                                      <option value="completed">Completed</option>
+                                    </Select> */}
+                                    <select
+                                        defaultValue={queryParams?.status}
+                                        className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        onChange={e => fieldChange('status', e.target.value)}
+                                    >
+                                        <option value="">All Statuses</option>
+                                        <option value="active">Active</option>
+                                        <option value="on hold">On Hold</option>
+                                        <option value="completed">Completed</option>
+                                    </select>
+
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                       
-                                    </th>
-                             
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"></th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"></th>
+
+                                    <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-500 uppercase"></th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="divide-y divide-gray-200 bg-white">
                                 {projectsData.length > 0 ? (
                                     projectsData.map((project: Project) => (
                                         <tr key={project.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div>
-                                                  <div>
-                                                    {project.image ? (                                                        <img 
-                                                            src={project.image} 
-                                                            alt={project.name} 
-                                                            className="w-10 h-10 rounded-full object-cover"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                                                            <span className="text-gray-500">No Image</span>
-                                                        </div>
-                                                    )}
-                                                  </div>
-                                                    <div className="text-sm font-medium text-gray-900">
-                                                        {project.name}
-                                                    </div>
+                                                    <div className="text-sm font-medium text-gray-900">{project.name}</div>
                                                     {project.description && (
-                                                        <div className="text-sm text-gray-500 truncate max-w-xs">
-                                                            {project.description}
-                                                        </div>
+                                                        <div className="max-w-xs truncate text-sm text-gray-500">{project.description}</div>
                                                     )}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <Badge 
-                                                    className={`${getStatusColor(project.status)} border-0`}
-                                                >
+                                                <Badge className={`${getStatusColor(project.status)} border-0`}>
                                                     {project.status.replace('_', ' ')}
                                                 </Badge>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {project.due_date 
-                                                    ? new Date(project.due_date).toLocaleDateString()
-                                                    : 'No due date'
-                                                }
+                                            <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
+                                                {project.due_date ? new Date(project.due_date).toLocaleDateString() : 'No due date'}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                             {project.created_by?.name}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">{project.created_by?.name}</td>
+                                            <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                                                 <div className="flex justify-end gap-2">
                                                     <Link href={`/projects/${project.id}`}>
                                                         <Button variant="ghost" size="sm">
-                                                            <Eye className="w-4 h-4" />
+                                                            <Eye className="h-4 w-4" />
                                                         </Button>
                                                     </Link>
                                                     <Link href={route('projects.edit', project.id)}>
                                                         <Button variant="ghost" size="sm">
-                                                            <Edit className="w-4 h-4" />
+                                                            <Edit className="h-4 w-4" />
                                                         </Button>
                                                     </Link>
-                                                    <Link href={route('projects.destroy', project.id)}  >
+                                                    <Link href={route('projects.destroy', project.id)}>
                                                         <Button variant="ghost" size="sm">
-                                                            <Trash2 className="w-4 h-4" />
+                                                            <Trash2 className="h-4 w-4" />
                                                         </Button>
                                                     </Link>
                                                 </div>
@@ -185,8 +184,8 @@ export default function Index({ projects }: Props) {
                                 ) : (
                                     <tr>
                                         <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                                            No projects found. 
-                                            <Link href="/projects/create" className="text-blue-600 hover:text-blue-800 ml-1">
+                                            No projects found.
+                                            <Link href="/projects/create" className="ml-1 text-blue-600 hover:text-blue-800">
                                                 Create your first project
                                             </Link>
                                         </td>
@@ -194,7 +193,7 @@ export default function Index({ projects }: Props) {
                                 )}
                             </tbody>
                         </table>
-                      
+
                         <Pagination meta={projects.meta} />
                     </div>
                 </div>
