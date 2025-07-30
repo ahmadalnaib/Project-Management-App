@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router } from '@inertiajs/react';
-import { Edit, Eye, Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Edit, Eye, Plus, Trash2 } from 'lucide-react';
 
 interface User {
     id: number;
@@ -81,7 +81,13 @@ export default function Index({ projects, queryParams = null }: Props) {
             preserveState: true,
             preserveScroll: true,
         });
-        
+    };
+
+    const getSortIcon = (field) => {
+        if (queryParams.sort_field === field) {
+            return queryParams.sort_direction === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />;
+        }
+         return <ChevronDown className="ml-1 h-4 w-4 text-gray-300 opacity-50" />;
     };
 
     const getStatusColor = (status: string): string => {
@@ -120,19 +126,19 @@ export default function Index({ projects, queryParams = null }: Props) {
                                         onClick={(e) => shortChange('name')}
                                         className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
                                     >
-                                        Project
+                                        <div className="flex items-center">Project {getSortIcon('name')}</div>
                                     </th>
                                     <th
                                         onClick={(e) => shortChange('status')}
                                         className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
                                     >
-                                        Status
+                                        <div className="flex items-center">Status {getSortIcon('status')}</div>
                                     </th>
                                     <th
                                         onClick={(e) => shortChange('due_date')}
                                         className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
                                     >
-                                        Due Date
+                                        <div className="flex items-center">Due Date {getSortIcon('due_date')}</div>
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Created by</th>
 

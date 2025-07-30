@@ -17,6 +17,9 @@ class Task extends Model
         'description',
         'due_date',
         'status',
+        'priority',
+        'image',
+        'project_id',
         'assigned_to',
         'created_by',
         'updated_by',
@@ -25,6 +28,11 @@ class Task extends Model
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function assignedUser()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
     }
 
     public function user()
