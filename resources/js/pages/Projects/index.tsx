@@ -2,10 +2,8 @@ import Pagination from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router } from '@inertiajs/react';
-import { on } from 'events';
 import { Edit, Eye, Plus, Trash2 } from 'lucide-react';
 
 interface User {
@@ -43,23 +41,22 @@ interface Props {
     projects: Project[] | PaginatedProjects;
 }
 
-export default function Index({ projects,queryParams=null }: Props) {
+export default function Index({ projects, queryParams = null }: Props) {
     // Handle both wrapped and unwrapped data structures
     const projectsData: Project[] = Array.isArray(projects) ? projects : projects?.data || [];
 
-
     queryParams = queryParams || {};
-    const fieldChange= (name,value) =>{
-      if(value){
-        queryParams[name] = value;
-      }else{
-        delete queryParams[name];
-      }
-      router.get(route('projects.index'), queryParams, {
-        preserveState: true,
-        preserveScroll: true,
-      });
-    }
+    const fieldChange = (name, value) => {
+        if (value) {
+            queryParams[name] = value;
+        } else {
+            delete queryParams[name];
+        }
+        router.get(route('projects.index'), queryParams, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    };
 
     const onKeyPress = (name, e) => {
         if (e.key === 'Enter') {
@@ -67,7 +64,25 @@ export default function Index({ projects,queryParams=null }: Props) {
             fieldChange(name, e.target.value);
             // Optionally, you can trigger a search or filter function here
         }
-    }
+    };
+
+    const shortChange = (name) => {
+        if (name === queryParams.sort_field) {
+            if (queryParams.sort_direction === 'asc') {
+                queryParams.sort_direction = 'desc';
+            } else {
+                queryParams.sort_direction = 'asc';
+            }
+        } else {
+            queryParams.sort_field = name;
+            queryParams.sort_direction = 'asc';
+        }
+        router.get(route('projects.index'), queryParams, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+        
+    };
 
     const getStatusColor = (status: string): string => {
         switch (status.toLowerCase()) {
@@ -101,9 +116,25 @@ export default function Index({ projects,queryParams=null }: Props) {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Project</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Status</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Due Date</th>
+                                    <th
+                                        onClick={(e) => shortChange('name')}
+                                        className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+                                    >
+                                        Project
+                                    </th>
+                                    <th
+                                        onClick={(e) => shortChange('status')}
+                                        className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+                                    >
+                                        Status
+                                    </th>
+                                    <th
+                                        onClick={(e) => shortChange('due_date')}
+                                        className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+                                    >
+                                        Due Date
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Created by</th>
 
                                     <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-500 uppercase">Actions</th>
                                 </tr>
@@ -111,7 +142,13 @@ export default function Index({ projects,queryParams=null }: Props) {
                             <thead className="bg-gray-50">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                        <Input defaultValue={queryParams?.name} placeholder="Search by project name" className='w-full' onBlur={e => fieldChange('name', e.target.value)}  onKeyPress={e => onKeyPress('name', e)} />
+                                        <Input
+                                            defaultValue={queryParams?.name}
+                                            placeholder="Search by project name"
+                                            className="w-full"
+                                            onBlur={(e) => fieldChange('name', e.target.value)}
+                                            onKeyPress={(e) => onKeyPress('name', e)}
+                                        />
                                     </th>
 
                                     <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
@@ -121,17 +158,16 @@ export default function Index({ projects,queryParams=null }: Props) {
                                       <option value="in_progress">In Progress</option>
                                       <option value="completed">Completed</option>
                                     </Select> */}
-                                    <select
-                                        defaultValue={queryParams?.status}
-                                        className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        onChange={e => fieldChange('status', e.target.value)}
-                                    >
-                                        <option value="">All Statuses</option>
-                                        <option value="active">Active</option>
-                                        <option value="on hold">On Hold</option>
-                                        <option value="completed">Completed</option>
-                                    </select>
-
+                                        <select
+                                            defaultValue={queryParams?.status}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            onChange={(e) => fieldChange('status', e.target.value)}
+                                        >
+                                            <option value="">All Statuses</option>
+                                            <option value="active">Active</option>
+                                            <option value="on hold">On Hold</option>
+                                            <option value="completed">Completed</option>
+                                        </select>
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"></th>
                                     <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"></th>
