@@ -55,7 +55,7 @@ export default function Show({ project }: ShowProps) {
               </div>
               {project.image && (
                 <img 
-                  src={project.image} 
+                  src={`/storage/${project.image}`}
                   alt={project.name}
                   className="w-24 h-24 object-cover rounded-lg"
                 />

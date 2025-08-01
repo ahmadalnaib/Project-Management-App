@@ -92,6 +92,16 @@ export default function Index({ projects, success, queryParams = null }: Props) 
          return <ChevronDown className="ml-1 h-4 w-4 text-gray-300 opacity-50" />;
     };
 
+    const handleDeleteProject = (project) => {
+        if (confirm('Are you sure you want to delete this project?')) {
+            // Assuming you have a route for deleting projects
+            router.delete(route('projects.destroy', project.id), {
+                preserveState: true,
+                preserveScroll: true,
+            });
+        }
+    }
+
     const getStatusColor = (status: string): string => {
         switch (status.toLowerCase()) {
             case 'pending':
@@ -224,11 +234,9 @@ export default function Index({ projects, success, queryParams = null }: Props) 
                                                             <Edit className="h-4 w-4" />
                                                         </Button>
                                                     </Link>
-                                                    <Link href={route('projects.destroy', project.id)}>
-                                                        <Button variant="ghost" size="sm">
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </Link>
+                                                    <Button onClick={e => handleDeleteProject(project)} variant="ghost" size="sm">
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
                                                 </div>
                                             </td>
                                         </tr>

@@ -33,6 +33,23 @@ export default function Create() {
           <div className="p-6">
             <form onSubmit={onSubmit} className="space-y-4">
               <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="image">
+                  Project Image
+                </label>
+                <input
+                  type="file"
+                  id="image"
+                  name="image"
+                  accept="image/*"
+                  onChange={(e) => setData('image', e.target.files[0])}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                {errors.image && (
+                  <p className="mt-1 text-sm text-red-600">{errors.image}</p>
+                )}
+              </div>
+
+              <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="name">
                   Project Name
                 </label>

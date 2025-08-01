@@ -53,6 +53,13 @@ class ProjectController extends Controller
     {
         //
         $validatedData = $request->validated();
+        $image=$validatedData['image'] ?? null;
+        if ($image) {
+            $imagePath = $request->file('image')->store('projects', 'public');
+            $validatedData['image'] = $imagePath; // Store the image path
+        } else {
+            $validatedData['image'] = null; // Ensure image is null if not provided
+        }
         $validatedData['created_by'] = auth()->id();
         $validatedData['updated_by'] = auth()->id();
         $project = Project::create($validatedData);
@@ -94,5 +101,7 @@ class ProjectController extends Controller
     public function destroy(Project $project)
     {
         //
+        $project->delete();
+        return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');
     }
 }
