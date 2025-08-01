@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Storage;
 use Inertia\Inertia;
 use App\Models\Project;
+use App\Http\Resources\ProjectResource;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
-use App\Http\Resources\ProjectResource;
 
 class ProjectController extends Controller
 {
@@ -85,6 +86,9 @@ class ProjectController extends Controller
     public function edit(Project $project)
     {
         //
+        return Inertia::render('Projects/Edit', [
+            'project' => new ProjectResource($project),
+        ]);
     }
 
     /**
@@ -93,6 +97,23 @@ class ProjectController extends Controller
     public function update(UpdateProjectRequest $request, Project $project)
     {
         //
+        $validatedData = $request->validated();
+        $image = $validatedData['image'] ?? null;
+        if ($image) {
+            // Delete the old image if it exists
+            if ($project->image) {
+                Storage::disk('public')->delete($project->image);
+            }
+            // Store the new image
+            $imagePath = $request->file('image')->store('projects', 'public');
+            $validatedData['image'] = $imagePath; // Store the new image path
+        } else {
+            $validatedData['image'] = $project->image; // Keep the old image if no new one is provided
+        }
+        $validatedData['updated_by'] = auth()->id();
+        $project->update($validatedData);
+
+        return redirect()->route('projects.index')->with('success', 'Project updated successfully.');
     }
 
     /**
@@ -101,7 +122,12 @@ class ProjectController extends Controller
     public function destroy(Project $project)
     {
         //
+        $projectName= $project->name;
+        if ($project->image) {
+            // Delete the image file from storage
+            Storage::disk('public')->delete($project->image);
+        }
         $project->delete();
-        return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');
+        return redirect()->route('projects.index')->with('success', 'Project ' . $projectName . ' deleted successfully.');
     }
 }
