@@ -20,6 +20,8 @@ class Project extends Model
         'status',
         'created_by',
         'updated_by',
+        'image',
+ 
     ];
 
     public function tasks()

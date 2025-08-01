@@ -11,7 +11,7 @@ class StoreUserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,6 +23,14 @@ class StoreUserRequest extends FormRequest
     {
         return [
             //
+            'name' => 'required|string|max:255',
+            'status' => 'required',
+            'description' => 'nullable|string|max:1000',
+            'due_date' => 'nullable|date|after_or_equal:today',
+            'priority' => 'nullable|in:low,medium,high',
+            'assigned_to' => 'nullable|exists:users,id',
         ];
     }
+
+
 }

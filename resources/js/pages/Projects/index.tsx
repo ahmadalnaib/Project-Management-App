@@ -24,6 +24,7 @@ interface Project {
     created_at: string;
 }
 
+
 interface PaginatedProjects {
     data: Project[];
     current_page: number;
@@ -41,7 +42,8 @@ interface Props {
     projects: Project[] | PaginatedProjects;
 }
 
-export default function Index({ projects, queryParams = null }: Props) {
+
+export default function Index({ projects, success, queryParams = null }: Props) {
     // Handle both wrapped and unwrapped data structures
     const projectsData: Project[] = Array.isArray(projects) ? projects : projects?.data || [];
 
@@ -108,6 +110,11 @@ export default function Index({ projects, queryParams = null }: Props) {
             <Head title="Projects" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex items-center justify-between">
+                    {success && (
+                        <div className="text-sm text-green-600">
+                            {success}
+                        </div>
+                    )}
                     <h1 className="text-2xl font-bold">Projects</h1>
                     <Link href="/projects/create">
                         <Button>
@@ -126,7 +133,8 @@ export default function Index({ projects, queryParams = null }: Props) {
                                         onClick={(e) => shortChange('name')}
                                         className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
                                     >
-                                        <div className="flex items-center">Project {getSortIcon('name')}</div>
+                                        <div className="flex items-center">Project
+                                             {getSortIcon('name')}</div>
                                     </th>
                                     <th
                                         onClick={(e) => shortChange('status')}
@@ -187,10 +195,12 @@ export default function Index({ projects, queryParams = null }: Props) {
                                         <tr key={project.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div>
-                                                    <div className="text-sm font-medium text-gray-900">{project.name}</div>
-                                                    {project.description && (
-                                                        <div className="max-w-xs truncate text-sm text-gray-500">{project.description}</div>
-                                                    )}
+                                                    <div className="text-sm font-medium text-gray-900">
+                                                        <Link href={route('projects.show', project.id)} className="hover:underline">
+                                                        {project.name}
+                                                        </Link>
+                                                    </div>
+                                                  
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">

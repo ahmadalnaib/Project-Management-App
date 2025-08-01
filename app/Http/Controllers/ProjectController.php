@@ -33,6 +33,7 @@ class ProjectController extends Controller
         return Inertia::render('Projects/index', [
             'projects' => ProjectResource::collection($projects),
             'queryParams' => request()->query() ?: null,
+            'success' => session('success'),
         ]);
     }
 
@@ -42,6 +43,7 @@ class ProjectController extends Controller
     public function create()
     {
         //
+        return Inertia::render('Projects/Create');
     }
 
     /**
@@ -50,6 +52,13 @@ class ProjectController extends Controller
     public function store(StoreProjectRequest $request)
     {
         //
+        $validatedData = $request->validated();
+        $validatedData['created_by'] = auth()->id();
+        $validatedData['updated_by'] = auth()->id();
+        $project = Project::create($validatedData);
+   
+
+        return redirect()->route('projects.index')->with('success', 'Project created successfully.');
     }
 
     /**
@@ -58,6 +67,9 @@ class ProjectController extends Controller
     public function show(Project $project)
     {
         //
+        return Inertia::render('Projects/Show', [
+            'project' => new ProjectResource($project),
+        ]);
     }
 
     /**
